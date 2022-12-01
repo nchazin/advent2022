@@ -9,7 +9,7 @@ elves = []
 counter = 0
 for line in data:
     line = line.strip()
-    if line == '':
+    if line == "":
         elves.append(counter)
         counter = 0
     else:
@@ -17,8 +17,7 @@ for line in data:
 
 elves.append(counter)
 
-print(elves)
 elves.sort()
 print(elves[-1])
-    
-    
+
+print(sum(elves[-3:]))
