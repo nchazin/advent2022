@@ -5,6 +5,8 @@ with open(sys.argv[1]) as f:
 
 contained = 0
 
+overlap = 0
+
 
 def make_sections(elf):
     s, f = elf.split("-")
@@ -18,5 +20,8 @@ for pairs in data:
     common = assignments[0].intersection(assignments[1])
     if len(common) == min([len(a) for a in assignments]):
         contained += 1
+    if len(common) >= 1:
+        overlap += 1
 
 print(contained)
+print(overlap)
