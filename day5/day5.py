@@ -1,6 +1,8 @@
 import sys
 import math
 
+import aocd
+
 with open(sys.argv[1]) as f:
     data = f.readlines()
 
@@ -51,6 +53,7 @@ def print_stacks(stacks):
 
 
 print_stacks(stacks)
+aocd.submit("".join(stack[-1] for stack in stacks), part="a", day=5, year=2022)
 
 
 stacks = make_stacks()
@@ -75,3 +78,4 @@ for line in data:
             stacks[mto - 1].append(c)
 
 print_stacks(stacks)
+aocd.submit("".join(stack[-1] for stack in stacks), part="b", day=5, year=2022)
