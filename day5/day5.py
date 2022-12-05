@@ -47,7 +47,7 @@ for line in data:
 
 
 def print_stacks(stacks):
-    print(''.join(stack[-1]for stack in stacks))
+    print("".join(stack[-1] for stack in stacks))
 
 
 print_stacks(stacks)
