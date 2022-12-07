@@ -19,6 +19,7 @@ def submit(val, part, day, year):
 
 
 
+
 class File():
     def __init__(self, name, type, size=None, parent=None):
         self.name=name
@@ -30,61 +31,75 @@ class File():
     def __repr__(self):
         return repr(str(self.type) + " "+  self.name + " " +  str(self.size))
 
+    def get_size(self):
+        if self.type == filetypes.file:
+             return self.size
+        else:
+             return self.dir_size()
+
+    def dir_size(self):
+        size = 0
+        for c in self.children:
+            size += c.get_size()
+        print(f"dir: {self.name} size: {size}")
+        return size
+        
 with open(sys.argv[1]) as f:
     data = f.read()
 
 root = File("/", filetypes.dir)
 curdir = None
+alldirs = [root]
 
 def build_tree(data):
     datalines = data.split('\n')
     i = 0
     while i < len(datalines):
         line = datalines[i]
-        if line == "":
+        parts = line.split(' ')
+        if len(parts) < 2:
             break
-        if line == '$ cd /':
-            curdir = root
-            i = 1
-            continue
-        elif line == '$ ls':
+        elif parts[1] == 'cd':
             i += 1
-            while i < len(datalines):
+            print(line)
+            if parts[2] == '/':
+                curdir = root
+                print(f"cd to {curdir}")
+            elif parts[2] == '..':
+                curdir = curdir.parent
+                print(f".. to {curdir}")
+            else:
+                found = False
+                print(parts[2])
+                print(curdir)
+                for item in curdir.children:
+                    if item.type == filetypes.dir and item.name == parts[2]:
+                        curdir = item
+                        found = True
+                        break
+                if not found:
+                    raise RuntimeError("Could not find " + parts[2])
+        elif parts[1] == 'ls':
+            i+=1
+            while True:
                 line = datalines[i]
                 if line == "" or  line[0] == '$':
                     break
+                size, name = line.split(" ")
+                if size == 'dir':
+                    newfile = File(name, filetypes.dir)
+                    alldirs.append(newfile)
                 else:
-                    size, name = line.split(" ")
-                    if size == 'dir':
-                        newfile = File(name, filetypes.dir)
-                    else:
-                        newfile = File(name, filetypes.file, int(size))
-                    newfile.parent = curdir
-                    print(f"adding {newfile} to {curdir}")
-                    curdir.children.append(newfile)
+                    newfile = File(name, filetypes.file, int(size))
+                print(f"adding {newfile} to {curdir}")
+                newfile.parent = curdir
+                curdir.children.append(newfile)
                 i += 1
-        elif '$ cd' in line:
-            print(f"cd {line}")
-            _, _, dirname = line.split(" ")
-            if dirname == '..':
-                print(f"changing to {curdir.parent}")
-                curdir = curdir.parent
-            else:
-                for f in curdir.children:
-                    if f.name == dirname:
-                        if f.type == filetypes.dir:
-                            print(f"changing to {f}")
-                            curdir = f
-                            break
-                        else:
-                            print(f"{f} is not a directory!")
-            i += 1
         else:
-            print(f"how dfd we get here with{line}")
-
+            raise RuntimeError("Unexpectd line: " + line)
+                
 
 build_tree(data)
-
 
 def sizedir(dir):
     total_size = 0
@@ -94,45 +109,43 @@ def sizedir(dir):
         else:
             total_size += sizedir(child)
     return total_size
+dir_sizes = [d.dir_size() for d in alldirs]
+smalldirs = [d.dir_size() for d in alldirs if d.dir_size() <= 100000]
 
 def parse_tree():
     nodes = [root]
     dirs = {}
+    proc = 0
     while len(nodes) > 0:
+        proc +=1 
         cur = nodes.pop()
-        dirs[cur.name] = sizedir(cur)
+        dirs[cur.name] = cur.get_size()
         for child in cur.children:
             if child.type ==filetypes.dir:
                 nodes.append(child)
 
+    print(f"procs: {proc}")
     return dirs
+
 dirs = parse_tree()
 
 size = 0
 for k,v  in dirs.items():
-    print(f"{k} {v}")
     if v <= 100000:
-        print(f"      adding {v}")
+        print(f"      adding {k}")
         size += v
 print(size)
-size = 0
-for k,v in dirs.items():
-    if k != '/':
-        size += v
-print(size)
+
+
 
 def print_tree(depth, node):
-    print (' '*depth, '-', end="")
+    print (' '*depth +  '- ', end="")
     print(node,)
     for k in node.children:
-        if k.name == 'd':
-            import pdb; pdb.set_trace()
-        if k.type == filetypes.dir:
-            print_tree(depth+1, k)
-        else:
-            print_tree(depth, k)
-
-print_tree(0, root)    
+        print_tree(depth+2, k)
+#print_tree(0, root)    
+print(sum(smalldirs))
 
 
-submit(size, "a", 7, 2022)
+#print(size)
+submit(sum(smalldirs), "a", 7, 2022)
