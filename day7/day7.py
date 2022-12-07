@@ -99,18 +99,28 @@ def build_tree(data):
 
 build_tree(data)
 
-dir_sizes = [d.dir_size() for d in alldirs]
-smalldirs = [d.dir_size() for d in alldirs if d.dir_size() <= 100000]
+nodes = [root]
+dirsizes = []
+while len(nodes) > 0:
+    node = nodes.pop()
+    if node.type == filetypes.dir:
+        dirsizes.append(node.dir_size())
+    for child in node.children:
+        nodes.insert(0, child)
 
 
+smalldirs = [d for d in dirsizes if d <= 100000]
+
+print(sum(smalldirs))
 submit(sum(smalldirs), "a", 7, 2022)
 
 total_size = root.dir_size()
 free_space = 70000000 - total_size
 needed_space = 30000000
 
-big_enough = [
-    d.dir_size() for d in alldirs if free_space + d.dir_size() >= needed_space
-]
-big_enough.sort()
-submit(big_enough[0], "b", 7, 2022)
+bigdirs = [d for d in dirsizes if free_space + d >= needed_space]
+
+bigdirs.sort()
+print(bigdirs[0])
+
+submit(bigdirs[0], "b", 7, 2022)
