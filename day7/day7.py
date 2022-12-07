@@ -24,6 +24,7 @@ class File:
         self.name = name
         self.type = type
         self.size = size
+        self._size = None
         self.parent = parent
         self.children = []
 
@@ -37,9 +38,12 @@ class File:
             return self.dir_size()
 
     def dir_size(self):
+        if self._size is not None:
+            return self._size
         size = 0
         for c in self.children:
             size += c.get_size()
+        self._size = size
         return size
 
 
