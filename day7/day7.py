@@ -101,51 +101,21 @@ def build_tree(data):
 
 build_tree(data)
 
-def sizedir(dir):
-    total_size = 0
-    for child in dir.children:
-        if child.type == filetypes.file:
-            total_size += child.size
-        else:
-            total_size += sizedir(child)
-    return total_size
 dir_sizes = [d.dir_size() for d in alldirs]
 smalldirs = [d.dir_size() for d in alldirs if d.dir_size() <= 100000]
 
-def parse_tree():
-    nodes = [root]
-    dirs = {}
-    proc = 0
-    while len(nodes) > 0:
-        proc +=1 
-        cur = nodes.pop()
-        dirs[cur.name] = cur.get_size()
-        for child in cur.children:
-            if child.type ==filetypes.dir:
-                nodes.append(child)
-
-    print(f"procs: {proc}")
-    return dirs
-
-dirs = parse_tree()
-
-size = 0
-for k,v  in dirs.items():
-    if v <= 100000:
-        print(f"      adding {k}")
-        size += v
-print(size)
-
-
-
-def print_tree(depth, node):
-    print (' '*depth +  '- ', end="")
-    print(node,)
-    for k in node.children:
-        print_tree(depth+2, k)
-#print_tree(0, root)    
 print(sum(smalldirs))
 
-
-#print(size)
 submit(sum(smalldirs), "a", 7, 2022)
+
+total_size = root.dir_size()
+free_space = 70000000- total_size
+needed_space = 30000000
+
+big_enough = [d for d in alldirs if  free_space + d.dir_size() >= needed_space]
+big_enough_sizes = [d.dir_size() for d in big_enough]
+big_enough_sizes.sort()
+print(big_enough)
+submit(big_enough_sizes[0], "b", 7, 2022)
+
+
