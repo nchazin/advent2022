@@ -25,64 +25,64 @@ forest = [r.replace("\n", "") for r in forest]
 def solve1(forest):
     forelen = len(forest)
     rowlen = len(forest[0])
-    VISCOUNT = 0
-    MAXSCORE = 0
+    viscount = 0
+    maxscore = 0
     for i in range(forelen):
         rowlen = len(forest[i])
         for j in range(rowlen):
             k = forest[i][j]
 
             # look up
-            VISUP = True
-            UPCOUNT = 0
+            visup = True
+            upcount = 0
             for ih in range(i - 1, -1, -1):
                 if forest[ih][j] >= k:
-                    UPCOUNT = i - ih
-                    VISUP = False
+                    upcount = i - ih
+                    visup = False
                     break
-            if VISUP and i > 0:
-                UPCOUNT = i
+            if visup and i > 0:
+                upcount = i
 
             # lookdown
-            VISDOWN = True
-            DOWNCOUNT = 0
+            visdown = True
+            downcount = 0
             for ih in range(i + 1, forelen):
                 if forest[ih][j] >= k:
-                    VISDOWN = False
-                    DOWNCOUNT = ih - i
+                    visdown = False
+                    downcount = ih - i
                     break
-            if VISDOWN and i < forelen - 1:
-                DOWNCOUNT = forelen - i - 1
+            if visdown and i < forelen - 1:
+                downcount = forelen - i - 1
 
             # lookleft
-            VISLEFT = True
-            LEFTCOUNT = 0
+            visleft = True
+            leftcount = 0
             for jh in range(j - 1, -1, -1):
                 if forest[i][jh] >= k:
-                    VISLEFT = False
-                    LEFTCOUNT = j - jh
+                    visleft = False
+                    leftcount = j - jh
                     break
-            if VISLEFT and j > 0:
-                LEFTCOUNT = j
+            if visleft and j > 0:
+                leftcount = j
 
             # lookright
-            VISRIGHT = True
-            RIGHTCOUNT = 0
+            visright = True
+            rightcount = 0
             for jh in range(j + 1, rowlen):
                 if forest[i][jh] >= k:
-                    VISRIGHT = False
-                    RIGHTCOUNT = jh - j
+                    visright = False
+                    rightcount = jh - j
                     break
-            if VISRIGHT and j < rowlen - 1:
-                RIGHTCOUNT = rowlen - j - 1
+            if visright and j < rowlen - 1:
+                rightcount = rowlen - j - 1
 
-            if VISUP or VISDOWN or VISLEFT or VISRIGHT:
-                VISCOUNT += 1
-            score = UPCOUNT * DOWNCOUNT * RIGHTCOUNT * LEFTCOUNT
-            if score > MAXSCORE:
-                MAXSCORE = score
+            if visup or visdown or visleft or visright:
+                viscount += 1
+            score = upcount * downcount * rightcount * leftcount
+            if score > maxscore:
+                maxscore = score
 
-    return [MAXSCORE, VISCOUNT]
+    return [maxscore, viscount]
 
 
 score, count = solve1(forest)
