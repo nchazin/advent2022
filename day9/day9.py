@@ -1,6 +1,7 @@
 import sys
 import aocd
 import math
+from collections import defaultdict
 
 
 if len(sys.argv) > 2 and sys.argv[2] == "submit":
@@ -21,11 +22,12 @@ with open(sys.argv[1]) as f:
     data = f.readlines()
 
 # this is a big field ... to playin (probably a smarter way...)
-rope_path = [[0] * 1000 for i in range(1000)]
+# rope_path = [[0] * 1000 for i in range(1000)]
+rope_path = defaultdict(int)
 start = [500, 500]
 head_pos = start
 tail_pos = start
-rope_path[start[0]][start[1]] = 1
+rope_path[tuple(start)] = 1
 
 
 def move_tail(tail_pos, head_pos):
@@ -67,7 +69,7 @@ for line in data:
             head_pos = [head_pos[0], head_pos[1] + 1]
             new_tail_pos = move_tail(tail_pos, head_pos)
             if new_tail_pos != tail_pos:
-                rope_path[new_tail_pos[0]][new_tail_pos[1]] = 1
+                rope_path[tuple(new_tail_pos)] = 1
                 tail_pos = new_tail_pos
 
     elif dir == "L":
@@ -75,7 +77,7 @@ for line in data:
             head_pos = [head_pos[0], head_pos[1] - 1]
             new_tail_pos = move_tail(tail_pos, head_pos)
             if new_tail_pos != tail_pos:
-                rope_path[new_tail_pos[0]][new_tail_pos[1]] = 1
+                rope_path[tuple(new_tail_pos)] = 1
                 tail_pos = new_tail_pos
 
     elif dir == "U":
@@ -83,14 +85,7 @@ for line in data:
             head_pos = [head_pos[0] + 1, head_pos[1]]
             new_tail_pos = move_tail(tail_pos, head_pos)
             if new_tail_pos != tail_pos:
-                try:
-                    rope_path[new_tail_pos[0]][new_tail_pos[1]] = 1
-                except:
-                    print(head_pos)
-                    print(new_tail_pos)
-                    raise
-
-                tail_pos = new_tail_pos
+                rope_path[tuple(new_tail_pos)] = 1
                 tail_pos = new_tail_pos
 
     elif dir == "D":
@@ -98,18 +93,17 @@ for line in data:
             head_pos = [head_pos[0] - 1, head_pos[1]]
             new_tail_pos = move_tail(tail_pos, head_pos)
             if new_tail_pos != tail_pos:
-                rope_path[new_tail_pos[0]][new_tail_pos[1]] = 1
+                rope_path[tuple(new_tail_pos)] = 1
                 tail_pos = new_tail_pos
 
 
-rows = [sum(r) for r in rope_path]
-submit(sum(rows), "a", 9, 2022)
+submit(len(rope_path), "a", 9, 2022)
 
 head_pos = start
 tail_pos = start
 tails = [tail_pos for i in range(9)]
-rope_path = [[0] * 1000 for i in range(1000)]
-rope_path[start[0]][start[1]] = 1
+rope_path = defaultdict(int)
+rope_path[tuple(start)] = 1
 
 
 for line in data:
@@ -127,7 +121,7 @@ for line in data:
                 new_pos = move_tail(tails[i], head)
                 if i == 8:
                     if new_pos != tails[8]:
-                        rope_path[new_pos[0]][new_pos[1]] = 1
+                        rope_path[tuple(new_pos)] = 1
                 tails[i] = new_pos
 
     elif dir == "L":
@@ -141,7 +135,7 @@ for line in data:
                 new_pos = move_tail(tails[i], head)
                 if i == 8:
                     if new_pos != tails[8]:
-                        rope_path[new_pos[0]][new_pos[1]] = 1
+                        rope_path[tuple(new_pos)] = 1
                 tails[i] = new_pos
 
     elif dir == "U":
@@ -155,7 +149,7 @@ for line in data:
                 new_pos = move_tail(tails[i], head)
                 if i == 8:
                     if new_pos != tails[8]:
-                        rope_path[new_pos[0]][new_pos[1]] = 1
+                        rope_path[tuple(new_pos)] = 1
                 tails[i] = new_pos
 
     elif dir == "D":
@@ -169,8 +163,8 @@ for line in data:
                 new_pos = move_tail(tails[i], head)
                 if i == 8:
                     if new_pos != tails[8]:
-                        rope_path[new_pos[0]][new_pos[1]] = 1
+                        rope_path[tuple(new_pos)] = 1
                 tails[i] = new_pos
 
-rows = [sum(r) for r in rope_path]
-submit(sum(rows), "b", 9, 2022)
+
+submit(len(rope_path), "b", 9, 2022)
