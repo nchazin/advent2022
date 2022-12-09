@@ -21,10 +21,8 @@ with open(sys.argv[1]) as f:
     print(sys.argv[1])
     data = f.readlines()
 
-# this is a big field ... to playin (probably a smarter way...)
-# rope_path = [[0] * 1000 for i in range(1000)]
 rope_path = defaultdict(int)
-start = [500, 500]
+start = [0, 0]
 head_pos = start
 tail_pos = start
 rope_path[tuple(start)] = 1
@@ -60,111 +58,39 @@ def move_tail(tail_pos, head_pos):
     return [ti, tj]
 
 
-for line in data:
-    dir, step = line.strip().split()
-    step = int(step)
-
-    if dir == "R":
-        for i in range(step):
-            head_pos = [head_pos[0], head_pos[1] + 1]
-            new_tail_pos = move_tail(tail_pos, head_pos)
-            if new_tail_pos != tail_pos:
-                rope_path[tuple(new_tail_pos)] = 1
-                tail_pos = new_tail_pos
-
-    elif dir == "L":
-        for i in range(step):
-            head_pos = [head_pos[0], head_pos[1] - 1]
-            new_tail_pos = move_tail(tail_pos, head_pos)
-            if new_tail_pos != tail_pos:
-                rope_path[tuple(new_tail_pos)] = 1
-                tail_pos = new_tail_pos
-
-    elif dir == "U":
-        for i in range(step):
-            head_pos = [head_pos[0] + 1, head_pos[1]]
-            new_tail_pos = move_tail(tail_pos, head_pos)
-            if new_tail_pos != tail_pos:
-                rope_path[tuple(new_tail_pos)] = 1
-                tail_pos = new_tail_pos
-
+def move_head(head_pos, dir):
+    i, j = head_pos
+    if dir == "U":
+        i += 1
     elif dir == "D":
-        for i in range(step):
-            head_pos = [head_pos[0] - 1, head_pos[1]]
-            new_tail_pos = move_tail(tail_pos, head_pos)
-            if new_tail_pos != tail_pos:
-                rope_path[tuple(new_tail_pos)] = 1
-                tail_pos = new_tail_pos
-
-
-submit(len(rope_path), "a", 9, 2022)
-
-head_pos = start
-tail_pos = start
-tails = [tail_pos for i in range(9)]
-rope_path = defaultdict(int)
-rope_path[tuple(start)] = 1
-
-
-for line in data:
-    dir, step = line.strip().split()
-    step = int(step)
-
-    if dir == "R":
-        for i in range(step):
-            head_pos = [head_pos[0], head_pos[1] + 1]
-            for i in range(len(tails)):
-                if i == 0:
-                    head = head_pos
-                else:
-                    head = tails[i - 1]
-                new_pos = move_tail(tails[i], head)
-                if i == 8:
-                    if new_pos != tails[8]:
-                        rope_path[tuple(new_pos)] = 1
-                tails[i] = new_pos
-
+        i -= 1
     elif dir == "L":
-        for i in range(step):
-            head_pos = [head_pos[0], head_pos[1] - 1]
-            for i in range(len(tails)):
-                if i == 0:
-                    head = head_pos
-                else:
-                    head = tails[i - 1]
-                new_pos = move_tail(tails[i], head)
-                if i == 8:
-                    if new_pos != tails[8]:
-                        rope_path[tuple(new_pos)] = 1
-                tails[i] = new_pos
-
-    elif dir == "U":
-        for i in range(step):
-            head_pos = [head_pos[0] + 1, head_pos[1]]
-            for i in range(len(tails)):
-                if i == 0:
-                    head = head_pos
-                else:
-                    head = tails[i - 1]
-                new_pos = move_tail(tails[i], head)
-                if i == 8:
-                    if new_pos != tails[8]:
-                        rope_path[tuple(new_pos)] = 1
-                tails[i] = new_pos
-
-    elif dir == "D":
-        for i in range(step):
-            head_pos = [head_pos[0] - 1, head_pos[1]]
-            for i in range(len(tails)):
-                if i == 0:
-                    head = head_pos
-                else:
-                    head = tails[i - 1]
-                new_pos = move_tail(tails[i], head)
-                if i == 8:
-                    if new_pos != tails[8]:
-                        rope_path[tuple(new_pos)] = 1
-                tails[i] = new_pos
+        j -= 1
+    elif dir == "R":
+        j += 1
+    return [i, j]
 
 
-submit(len(rope_path), "b", 9, 2022)
+def solver(knots, data):
+    rope_path = defaultdict(int)
+    rope_path[tuple(knots[-1])] = 1
+
+    for line in data:
+        dir, step = line.strip().split()
+        step = int(step)
+        for _ in range(step):
+            knots[0] = move_head(knots[0], dir)
+            for i in range(1, len(knots)):
+                knots[i] = move_tail(knots[i], knots[i - 1])
+                if i == len(knots) - 1:
+                    rope_path[tuple(knots[-1])] = 1
+
+    return len(rope_path)
+
+
+knots = [[0, 0], [0, 0]]
+submit(solver(knots, data), "a", 9, 2022)
+
+
+knots = [[0, 0] for i in range(10)]
+submit(solver(knots, data), "b", 9, 2022)
