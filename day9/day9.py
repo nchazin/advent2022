@@ -18,14 +18,7 @@ def submit(val, part, day, year):
 
 
 with open(sys.argv[1]) as f:
-    print(sys.argv[1])
     data = f.readlines()
-
-rope_path = defaultdict(int)
-start = [0, 0]
-head_pos = start
-tail_pos = start
-rope_path[tuple(start)] = 1
 
 
 def move_tail(tail_pos, head_pos):
