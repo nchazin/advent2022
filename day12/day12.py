@@ -108,5 +108,4 @@ pathlens = []
 for start in possible_starts:
     pathlens.append(path_find(grid, start))
 
-pathlens.sort()
-submit(pathlens[0], "b", 12, 2022)
+submit(min(pathlens), "b", 12, 2022)
