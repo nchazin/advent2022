@@ -1,7 +1,6 @@
 import sys
 import aocd
-import heapq
-from collections import defaultdict
+from collections import defaultdict, deque
 import string
 from math import inf
 
@@ -63,10 +62,11 @@ def path_find(grid, start):
     square_distances[start] = 0
     visited_squares = set()
 
-    heapq.heappush(squares_to_visit, (0, start))
+    squares_to_visit = deque()
+    squares_to_visit.append((0, start))
     steps = 0
     while len(squares_to_visit) > 0 and len(visited_squares) < total_squares:
-        visit = heapq.heappop(squares_to_visit)
+        visit = squares_to_visit.popleft()
         distance, cur = visit
         steps += 1
         adjacents = get_adjacent(cur, imax, jmax)
@@ -84,7 +84,7 @@ def path_find(grid, start):
                     square_distances[square], square_distances[cur] + 1
                 )
                 square_distances[square] = square_distance
-                heapq.heappush(squares_to_visit, (square_distance, square))
+                squares_to_visit.append((square_distance, square))
 
         visited_squares.add(cur)
     return square_distances[end]
