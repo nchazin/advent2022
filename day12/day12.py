@@ -48,7 +48,7 @@ def get_height(c):
     return string.ascii_letters.find(c)
 
 
-def path_find(grid, start):
+def path_find(grid, start, reverse=False):
     squares_to_visit = []
     end = ()
     imax = len(grid) - 1
@@ -78,7 +78,11 @@ def path_find(grid, start):
 
         for square in adjacents:
             square_height = get_height(grid[square[0]][square[1]])
-            if square not in visited_squares and square_height <= cur_height + 1:
+            if not reverse:
+                test = square_height <= cur_height + 1
+            else:
+                test = square_height >= cur_height - 1
+            if square not in visited_squares and test:
                 # lower the distance
                 square_distance = min(
                     square_distances[square], square_distances[cur] + 1
@@ -87,14 +91,16 @@ def path_find(grid, start):
                 squares_to_visit.append((square_distance, square))
 
         visited_squares.add(cur)
-    return square_distances[end]
+    return square_distances
 
 
 start = None
 for i, row in enumerate(grid):
     if (j := row.find("S")) >= 0:
         start = (i, j)
-submit(path_find(grid, start), "a", 12, 2022)
+    if (j := row.find("E")) >= 0:
+        end = (i, j)
+submit(path_find(grid, start)[end], "a", 12, 2022)
 
 
 possible_starts = []
@@ -103,9 +109,11 @@ for i, row in enumerate(grid):
         if c == "S" or c == "a":
             possible_starts.append((i, j))
 
+pathlens = path_find(grid, end, reverse=True)
 
-pathlens = []
+best = inf
 for start in possible_starts:
-    pathlens.append(path_find(grid, start))
+    if pathlens[start] < best:
+        best = pathlens[start]
 
-submit(min(pathlens), "b", 12, 2022)
+submit(best, "b", 12, 2022)
