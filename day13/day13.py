@@ -1,5 +1,6 @@
 import sys
 from functools import cmp_to_key
+import json
 
 import aocd
 
@@ -22,7 +23,7 @@ with open(sys.argv[1]) as f:
 
 
 pairs = [
-    [eval(p[0]), eval(p[1])]
+    [json.loads(p[0]), json.loads(p[1])]
     for p in [p.strip().split("\n") for p in data.split("\n\n")]
 ]
 
