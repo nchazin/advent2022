@@ -67,8 +67,6 @@ count = 0
 while True:
     sandp = (500, 0)
     count += 1
-    if count > 10000:
-        break
     while sandp[1] < maxj:
         i, j = sandp
         if cavern[(i, j + 1)] == "":
@@ -78,29 +76,25 @@ while True:
         elif cavern[(i + 1, j + 1)] == "":
             sandp = (i + 1, j + 1)
         else:
-            cavern[(i, j)] = "o"
+            cavern[sandp] = "o"
             break
     if sandp[1] >= maxj:
         break
 
-submit(count - 1, "a", 14, 2022)
+# Subtract one for going one too far
+count -= 1
+submit(count, "a", 14, 2022)
 
-cavern = make_cavern(data)
-count = 0
+
 floor = maxj + 1
 while True:
     sandp = (500, 0)
     count += 1
-    # print(f"count: {count}")
-    if cavern[(sandp)] == "o":
-        break
-    if count > 100000:
+    if cavern[sandp] == "o":
         break
     while sandp[1] < maxj + 2:
         i, j = sandp
-        # print(f"xxx {sandp}")
         if j == maxj + 1:
-            # print(f"thing at{i},{j}")
             cavern[(i, j)] = "o"
             break
         if cavern[(i, j + 1)] == "":
@@ -110,8 +104,8 @@ while True:
         elif cavern[(i + 1, j + 1)] == "":
             sandp = (i + 1, j + 1)
         else:
-            # print(f"thing2 at{i},{j}")
-            cavern[(i, j)] = "o"
+            cavern[sandp] = "o"
             break
 
+# Subtract one for going one too far
 submit(count - 1, "b", 14, 2022)
