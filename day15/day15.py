@@ -25,8 +25,10 @@ with open(sys.argv[1]) as f:
 
 if len(sys.argv) > 2:
     checkline = 2000000
+    rows_to_check = 4000001
 else:
     checkline = 10
+    rows_to_check = 21
 
 beacons = set()
 sensors = set()
@@ -78,7 +80,7 @@ def mergeable(a, b):
 
 
 def _mergeable(a, b):
-    return a[0] >= b[0] and a[0] <= b[1]
+    return (a[0] >= b[0] and a[0] <= b[1]) or a[1] == b[0] - 1
 
 
 def compare_sweeps(a, b):
@@ -108,6 +110,9 @@ def mergeall(sweeps):
             else:
                 newsweeps.add(a)
                 i += 1
+            if i == len(sweepsl) - 1:
+                newsweeps.add(sweepsl[i])
+
         if len(newsweeps) > 0:
             sweeps = newsweeps
         new_len = len(sweeps)
@@ -115,33 +120,36 @@ def mergeall(sweeps):
 
 
 def sensor_sweep(checkline):
-    sweeps = set()
+    sweeps = []
     for sensor in sensors:
-        based = sensor.md
+        md = sensor.md
         s = sensor.sensor
-        straightd = abs(s[1] - checkline)
-        w = based * 2 + 1
-        w -= 2 * straightd
-        if w > 0:
-            w = floor(w / 2)
-            sweep = (s[0] - w, s[0] + w)
-            merged = False
-            for _sweep in sweeps:
-                # check for merges
-                if mergeable(sweep, _sweep):
-                    sweeps.remove(_sweep)
-                    sweeps.add(merge(sweep, _sweep))
-                    merged = True
-                    break
-            if not merged:
-                sweeps.add(sweep)
-
-    return mergeall(sweeps)
-
-
-sweeps = sensor_sweep(checkline)
+        dy = abs(s[1] - checkline)
+        if dy > md:
+            continue
+        dx = md - dy
+        sweeps.append((s[0] - dx, s[0] + dx))
+    sweeps.sort()
+    minx, maxx = sweeps[0]
+    for sweep in sweeps[1:]:
+        if sweep[0] < minx - 1 and sweep[1] < minx - 1:
+            print(minx - 1, ",", i)
+            return minx - 1
+        if sweep[0] > maxx + 1 and sweep[1] > maxx + 1:
+            print(maxx + 1, ",", i)
+            return maxx + 1
+        minx = min(minx, sweep[0])
+        maxx = max(maxx, sweep[1])
+    return sweeps
 
 
-print(sum(x[1] - x[0] for x in sweeps))
+sweeps = mergeall(sensor_sweep(checkline))
+
 
 submit(sum(x[1] - x[0] for x in sweeps), "a", 15, 2022)
+
+for i in range(rows_to_check):
+    sweeps = sensor_sweep(i)
+    if type(sweeps) != list:
+        submit(sweeps * 4000000 + i, "b", 15, 2022)
+        break
