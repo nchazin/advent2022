@@ -130,16 +130,6 @@ def sensor_sweep(checkline):
         dx = md - dy
         sweeps.append((s[0] - dx, s[0] + dx))
     sweeps.sort()
-    minx, maxx = sweeps[0]
-    for sweep in sweeps[1:]:
-        if sweep[0] < minx - 1 and sweep[1] < minx - 1:
-            print(minx - 1, ",", i)
-            return minx - 1
-        if sweep[0] > maxx + 1 and sweep[1] > maxx + 1:
-            print(maxx + 1, ",", i)
-            return maxx + 1
-        minx = min(minx, sweep[0])
-        maxx = max(maxx, sweep[1])
     return sweeps
 
 
@@ -150,6 +140,18 @@ submit(sum(x[1] - x[0] for x in sweeps), "a", 15, 2022)
 
 for i in range(rows_to_check):
     sweeps = sensor_sweep(i)
-    if type(sweeps) != list:
-        submit(sweeps * 4000000 + i, "b", 15, 2022)
+    minx, maxx = sweeps[0]
+    found = None
+    for sweep in sweeps[1:]:
+        if sweep[0] < minx - 1 and sweep[1] < minx - 1:
+            found = minx - 1
+            break
+        if sweep[0] > maxx + 1 and sweep[1] > maxx + 1:
+            found = maxx + 1
+            break
+        minx = min(minx, sweep[0])
+        maxx = max(maxx, sweep[1])
+    if found is not None:
         break
+print(found, ",", i)
+submit(found * 4000000 + i, "b", 15, 2022)
