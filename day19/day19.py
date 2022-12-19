@@ -24,19 +24,14 @@ for line in data:
     print(parts[1])
     id = int(parts[1][:-1])
     ore_cost = int(parts[6])
-    try:
-        clay_cost = int(parts[12])
-    except:
-        breakpoint()
+    clay_cost = int(parts[12])
     obsidian_cost = (int(parts[18]), int(parts[21]))
     geode_cost = (int(parts[27]), int(parts[30]))
     blueprints[id] = [ore_cost, clay_cost, obsidian_cost, geode_cost]
 
-for id, blueprint in blueprints.items():
-    print(f"{id} {blueprint}")
-
 
 def sim(blueprint, maxt):
+    print(blueprint)
     # core, clay, obsidia, geode, orebot, cbot, obsbot, gbot min
     state = (0, 0, 0, 0, 1, 0, 0, 0, 0)
 
@@ -59,12 +54,12 @@ def sim(blueprint, maxt):
         if obbt > blueprint[3][1]:
             obbt = blueprint[3][1]
         # or too many robots to avoid end times
-        if o > max_ore * (24 - t):
-            o = max_ore * 24 - t
-        if c > blueprint[2][1] * (24 - t):
-            c = blueprint[2][1] * (24 - t)
-        if ob > blueprint[3][1] * (24 - t):
-            ob = blueprint[3][1] * (24 - t)
+        if o > max_ore * (maxt - t):
+            o = max_ore * maxt - t
+        if c > blueprint[2][1] * (maxt - t):
+            c = blueprint[2][1] * (maxt - t)
+        if ob > blueprint[3][1] * (maxt - t):
+            ob = blueprint[3][1] * (maxt - t)
 
         capped_state = (o, c, ob, g, obt, cbt, obbt, gbt, t)
 
@@ -143,9 +138,21 @@ def sim(blueprint, maxt):
 
 
 total = 0
-for id, blueprint in blueprints.items():
-    maxg = sim(blueprint, 24)
-    score = id * maxg
-    total += score
+# for id, blueprint in blueprints.items():
+#    maxg = sim(blueprint, 24)
+#    score = id * maxg
+#    total += score
 
 submit(total, "a", 19, 2022)
+
+total = 1
+for i in range(1, 4):
+    if i not in blueprints:
+        continue
+    print(f"simming: {i}")
+    maxg = sim(blueprints[i], 32)
+    print(f"{i} {maxg}")
+    total *= maxg
+
+
+submit(total, "b", 19, 2022)
