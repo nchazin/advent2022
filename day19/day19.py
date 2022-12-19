@@ -65,6 +65,10 @@ def sim(blueprint, maxt):
 
         geodes = max(geodes, g)
 
+        # if we keep building geode robots, can we get higher than the current max?
+        if g + (maxt - t) * gbt + sum(list(range(maxt - t, 0, -1))) <= geodes:
+            continue
+
         if capped_state in states_seen:
             continue
 
@@ -138,10 +142,10 @@ def sim(blueprint, maxt):
 
 
 total = 0
-# for id, blueprint in blueprints.items():
-#    maxg = sim(blueprint, 24)
-#    score = id * maxg
-#    total += score
+for id, blueprint in blueprints.items():
+    maxg = sim(blueprint, 24)
+    score = id * maxg
+    total += score
 
 submit(total, "a", 19, 2022)
 
@@ -149,9 +153,7 @@ total = 1
 for i in range(1, 4):
     if i not in blueprints:
         continue
-    print(f"simming: {i}")
     maxg = sim(blueprints[i], 32)
-    print(f"{i} {maxg}")
     total *= maxg
 
 
