@@ -18,6 +18,8 @@ def submit(val, part, day, year):
 with open(sys.argv[1]) as f:
     monkeys = f.readlines()
 
+value = 0
+
 
 class Monkey:
     def __init__(self, name, val=None, left=None, right=None, operator=None):
@@ -27,10 +29,71 @@ class Monkey:
         self._val = val
         self.operator = operator
 
+    def solve(self, value):
+        if self.operator == "?":
+            return value
+        if self._val is not None:
+            return self._val
+        v, find_node = self.resolve()
+        if v == None and find_node == None:
+            return self.val
+        match self.operator:
+            case "+":
+                return find_node.solve(value - v)
+            case "-":
+                if find_node == self.right:
+                    ret = find_node.solve(v - value)
+
+                else:
+                    ret = find_node.solve(v + value)
+                return ret
+
+            case "*":
+                return find_node.solve(value / v)
+            case "/":
+                # value  = left / right
+                if find_node == self.right:
+                    ret = find_node.solve(v / value)
+                else:
+                    ret = find_node.solve(value * v)
+
+                return ret
+
+    def resolve(self):
+        value = None
+        find_node = None
+        matches = 0
+        try:
+            a = self.left.val
+            b = self.right.val
+        except Exception as E:
+            pass
+        try:
+            value = self.left.val
+            find_node = self.right
+            matches += 1
+        except Exception as E:
+            pass
+        try:
+            value = self.right.val
+            find_node = self.left
+            matches += 1
+        except:
+            pass
+        if matches > 1:
+            return None, None
+        return value, find_node
+
+    def mprint(self, h):
+        print(" " * h * 4, self.name, self._val, self.operator)
+        if self.left is not None:
+            self.left.mprint(h + 1)
+        if self.right is not None:
+            self.right.mprint(h + 1)
+
     @property
     def val(self):
-        if self._val:
-            print(f"")
+        if self._val is not None:
             return self._val
         match self.operator:
             case "+":
@@ -41,6 +104,11 @@ class Monkey:
                 return self.left.val * self.right.val
             case "/":
                 return self.left.val / self.right.val
+            case "=":
+                value, find_node = self.resolve()
+                return find_node.solve(value)
+            case "?":
+                raise Exception(self.name, " Does not compute!")
 
 
 monkeyd = dict()
@@ -68,74 +136,9 @@ for name, monkey in monkeyd.items():
 
 submit(int(monkeyd["root"].val), "a", 21, 2022)
 
-sys.exit(1)
+# part2
+monkeyd["root"].operator = "="
+monkeyd["humn"].operator = "?"
+monkeyd["humn"]._val = None
 
-
-monkey_nums = dict()
-for i in range(1000):
-    for monkey in monkeys:
-        p = monkey.strip().split(" ")
-
-        name = p[0].split(":")[0]
-        if len(p) == 2:
-            monkey_nums[name] = int(p[1])
-        else:
-            op1 = p[1]
-            operand = p[2]
-            op2 = p[3]
-            if op1 in monkey_nums and op2 in monkey_nums:
-                match operand:
-                    case "+":
-                        monkey_nums[name] = monkey_nums[op1] + monkey_nums[op2]
-                    case "-":
-                        monkey_nums[name] = monkey_nums[op1] - monkey_nums[op2]
-                    case "/":
-                        monkey_nums[name] = monkey_nums[op1] / monkey_nums[op2]
-                    case "*":
-                        monkey_nums[name] = monkey_nums[op1] * monkey_nums[op2]
-    if "root" in monkey_nums:
-        print(i)
-        submit(int(monkey_nums["root"]), "a", 21, 2022)
-        break
-
-
-monkey_nums = dict()
-for i in range(1000):
-    for monkey in monkeys:
-        p = monkey.strip().split(" ")
-
-        name = p[0].split(":")[0]
-        if name == "humn":
-            continue
-        if len(p) == 2:
-            monkey_nums[name] = int(p[1])
-        else:
-            op1 = p[1]
-            operand = p[2]
-            op2 = p[3]
-            if name == "root":
-                import pprint
-
-                if op1 in monkey_nums:
-                    print(f"{op2} -> {monkey_nums[op2]}")
-                    pprint.pprint(monkey_nums)
-                    sys.exit(1)
-                if op2 in monkey_nums:
-                    print(f"{op2} -> {monkey_nums[op2]}")
-                    pprint.pprint(monkey_nums)
-                    sys.exit(1)
-
-            if op1 in monkey_nums and op2 in monkey_nums:
-                match operand:
-                    case "+":
-                        monkey_nums[name] = monkey_nums[op1] + monkey_nums[op2]
-                    case "-":
-                        monkey_nums[name] = monkey_nums[op1] - monkey_nums[op2]
-                    case "/":
-                        monkey_nums[name] = monkey_nums[op1] / monkey_nums[op2]
-                    case "*":
-                        monkey_nums[name] = monkey_nums[op1] * monkey_nums[op2]
-    if "root" in monkey_nums:
-        print(i)
-        submit(int(monkey_nums["root"]), "a", 21, 2022)
-        break
+submit(int(monkeyd["root"].val), "b", 21, 2022)
