@@ -21,11 +21,6 @@ with open(sys.argv[1]) as f:
 pattern = data.strip()
 
 
-tower = {(x, 0) for x in range(7)}
-height = 0
-p = 0
-
-
 def get_jet(p, pattern):
     p = p % len(pattern)
     return pattern[p]
@@ -70,7 +65,7 @@ def pp(x):
 def pt(shape=set()):
     h = 0
     if len(shape) > 0:
-        h = max(p[1] for p in shape)
+        h = max((p[1] for p in shape))
     h += 4
     for y in range(height + h, 0, -1):
         pp("|")
@@ -85,10 +80,24 @@ def pt(shape=set()):
     print("+-------+")
 
 
-jets = 0
-for i in range(2022):
-    shape = get_shape(p, height + 4)
-    p += 1
+def maxc(col):
+    return max(p[1] for p in tower if p[0] == col)
+
+
+def make_state(p, j, h):
+    rocks = [maxc(i) for i in range(7)]
+    minc = min(rocks)
+    rocks = tuple((r - minc for r in rocks))
+    return (p, j, rocks)
+
+
+def make_state2(p, j, h):
+    rocks = tuple(((p[0], p[1] - h) for p in tower if p[1] > height - 50))
+    return (p, j, rocks)
+
+
+def drop_shape(shape):
+    global jets, tower, height
     while True:
         # pt(shape)
         jet = get_jet(jets, pattern)
@@ -111,15 +120,49 @@ for i in range(2022):
         shape = move_down(shape)
         # see if we entered the tower
         if any(p in tower for p in shape):
-            # oops, move up
-            # print("-------")
-            # print(f"{shape} in {tower}")
             shape = move_up(shape)
             tower = tower.union(set(shape))
-            height = max(p[1] for p in tower)
+            height = max((p[1] for p in tower))
             break
-    # pt()
 
-    # print(f"Tower: {tower}")
+
+tower = {(x, 0) for x in range(7)}
+height = 0
+p = 0
+jets = 0
+
+for i in range(2022):
+    shape = get_shape(p, height + 4)
+    p += 1
+    drop_shape(shape)
 
 submit(height, "a", 17, 2022)
+
+tower = {(x, 0) for x in range(7)}
+height = 0
+p = 0
+jets = 0
+states = dict()
+heights = dict()
+MAX_ROCKS = 1000000000000
+
+for _ in range(100000):
+    shape = get_shape(p, height + 4)
+    p += 1
+    drop_shape(shape)
+    if p < 1000:
+        continue
+    key = (p % 5, jets % len(pattern))
+    if key in states:
+        prev_p, prev_height = states[key]
+        period = p - prev_p
+        if p % period == MAX_ROCKS % period:
+            delta_height = height - prev_height
+            periods_left = (MAX_ROCKS - p) / period
+            submit(int(delta_height * periods_left + height), "b", 17, 2022)
+            break
+    else:
+        states[key] = [p, height]
+
+    if p % 1000 == 0:
+        print(p)
