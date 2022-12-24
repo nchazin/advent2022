@@ -84,6 +84,9 @@ class Elf:
 
             self.y = self.last_move[1]
             self.elves[(self.x, self.y)] = self
+            return True
+        else:
+            return False
 
     def shiftdir(self):
         self.dir.rotate(-1)
@@ -109,6 +112,15 @@ def print_elves(elves):
     return (minx, maxx, miny, maxy)
 
 
+def get_elves(elves):
+    minx = min(p[0] for p in elves.keys())
+    maxx = max(p[0] for p in elves.keys())
+    miny = min(p[1] for p in elves.keys())
+    maxy = max(p[1] for p in elves.keys())
+
+    return (minx, maxx, miny, maxy)
+
+
 id = 0
 for y, line in enumerate(data):
     line = line.strip()
@@ -127,11 +139,14 @@ def run_round(elves):
         if move is not None:
             elf_moves.append(move)
 
+    elves_moved = 0
     for move in elf_moves:
-        move[0].perform_move(all_moves)
+        if move[0].perform_move(all_moves):
+            elves_moved += 1
 
     for elf in elves.values():
         elf.shiftdir()
+    return elves_moved
 
 
 lastminx = 0
@@ -140,16 +155,11 @@ lastminy = 0
 lastmaxy = 0
 for i in range(1, 20000):
     print(f"Running round {i}")
-    run_round(elves)
-    minx, maxx, miny, maxy = print_elves(elves)
+    elves_moved = run_round(elves)
     if i == 10:
+        minx, maxx, miny, maxy = get_elves(elves)
         submit(
             (abs(maxx - minx) + 1) * (abs(maxy - miny) + 1) - len(elves), "a", 23, 2022
         )
-        breakpoint()
-    if minx == lastminx and miny == lastminy and maxx == lastmaxx and maxy == lastmaxy:
+    if elves_moved == 0:
         submit(i, "b", 23, 2022)
-    lastminx = minx
-    lastmaxx = maxx
-    lastminy = miny
-    lastmaxy = maxy
