@@ -1,6 +1,6 @@
 import sys
 import aocd
-from collections import deque
+from collections import deque, defaultdict
 
 
 if len(sys.argv) > 2 and sys.argv[2] == "submit":
@@ -26,13 +26,16 @@ class Elf:
     east = [(1, -1), (1, 0), (1, 1)]
     west = [(-1, -1), (-1, 0), (-1, 1)]
 
-    def __init__(self, x, y):
+    def __init__(self, id, x, y, elves):
+        self.id = id
         self.last_move = None
-        self.dir = deque(["S", "W", "E", "N"])
+        self.dir = deque(["N", "S", "W", "E"])
         self.x = x
         self.y = y
+        self.elves = elves
 
-    def neighbors(self, elves):
+    @property
+    def neighbors(self):
         north = [[-1, -1], [0, -1], [1, -1]]
         south = [[-1, 1], [0, 1], [1, 1]]
         east = [[1, -1], [1, 0], [1, 1]]
@@ -40,9 +43,50 @@ class Elf:
 
         neighbors = set()
         for dx, dy in north + south + east + west:
-            if elves.get((dx + self.x, dy + self.y)) is not None:
+            if self.elves.get((dx + self.x, dy + self.y)) is not None:
                 neighbors.add((dx, dy))
         return neighbors
+
+    def consider_move(self, all_moves):
+        self.last_move = None
+        if len(self.neighbors) == 0:
+            return None
+        else:
+            for dir in self.dir:
+                match dir:
+                    case "N":
+                        if len(self.neighbors.intersection(self.north)) == 0:
+                            self.last_move = (self.x, self.y - 1)
+                            all_moves[self.last_move] += 1
+                            break
+                    case "S":
+                        if len(self.neighbors.intersection(self.south)) == 0:
+                            self.last_move = (self.x, self.y + 1)
+                            all_moves[self.last_move] += 1
+                            break
+                    case "E":
+                        if len(self.neighbors.intersection(self.east)) == 0:
+                            self.last_move = (self.x + 1, self.y)
+                            all_moves[self.last_move] += 1
+                            break
+                    case "W":
+                        if len(self.neighbors.intersection(self.west)) == 0:
+                            self.last_move = (self.x - 1, self.y)
+                            all_moves[self.last_move] += 1
+                            break
+
+        return (self, self.last_move)
+
+    def perform_move(self, all_moves):
+        if self.last_move is not None and all_moves[self.last_move] == 1:
+            del self.elves[(self.x, self.y)]
+            self.x = self.last_move[0]
+
+            self.y = self.last_move[1]
+            self.elves[(self.x, self.y)] = self
+
+    def shiftdir(self):
+        self.dir.rotate(-1)
 
 
 elves = dict()
@@ -65,18 +109,34 @@ def print_elves(elves):
     return (minx, maxx, miny, maxy)
 
 
+id = 0
 for y, line in enumerate(data):
     line = line.strip()
     for x, c in enumerate(line):
         if c == "#":
-            e = Elf(x, y)
+            e = Elf(id, x, y, elves)
+            id += 1
             elves[(x, y)] = e
 
 
-for _, elf in elves.items():
-    print(f"elf: {elf.x} {elf.y}")
-    print("--->", elf.neighbors(elves))
-    print()
+def run_round(elves):
+    all_moves = defaultdict(int)
+    elf_moves = list()
+    for elf in elves.values():
+        move = elf.consider_move(all_moves)
+        if move is not None:
+            elf_moves.append(move)
+
+    for move in elf_moves:
+        move[0].perform_move(all_moves)
+
+    for elf in elves.values():
+        elf.shiftdir()
 
 
-print_elves(elves)
+for i in range(1, 11):
+    print(f"Running round {i}")
+    run_round(elves)
+print("====================")
+minx, maxx, miny, maxy = print_elves(elves)
+submit((abs(maxx - minx) + 1) * (abs(maxy - miny) + 1) - len(elves), "a", 23, 2022)
