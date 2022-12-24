@@ -134,9 +134,22 @@ def run_round(elves):
         elf.shiftdir()
 
 
-for i in range(1, 11):
+lastminx = 0
+lastmaxx = 0
+lastminy = 0
+lastmaxy = 0
+for i in range(1, 20000):
     print(f"Running round {i}")
     run_round(elves)
-print("====================")
-minx, maxx, miny, maxy = print_elves(elves)
-submit((abs(maxx - minx) + 1) * (abs(maxy - miny) + 1) - len(elves), "a", 23, 2022)
+    minx, maxx, miny, maxy = print_elves(elves)
+    if i == 10:
+        submit(
+            (abs(maxx - minx) + 1) * (abs(maxy - miny) + 1) - len(elves), "a", 23, 2022
+        )
+        breakpoint()
+    if minx == lastminx and miny == lastminy and maxx == lastmaxx and maxy == lastmaxy:
+        submit(i, "b", 23, 2022)
+    lastminx = minx
+    lastmaxx = maxx
+    lastminy = miny
+    lastmaxy = maxy
