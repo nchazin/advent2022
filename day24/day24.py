@@ -66,7 +66,7 @@ def print_valley(blizzards, elves):
 start, end = get_doors(blizzards)
 c, r = get_valley_size(blizzards)
 
-print_valley(blizzards, start)
+# print_valley(blizzards, start)
 
 WALL = ["#"]
 
@@ -119,19 +119,18 @@ def state(blizzards, elf):
     return tuple(s)
 
 
-def cross_valley(blizzards, c, r, start, goal, t):
+def cross_valley(blizzards, tstates, c, r, start, goal, t):
     elves = start
     mint = inf
     end = goal
     moves = deque()
-    tstates = get_tstates(blizzards, c, r)
+    tstates[0] = blizzards
 
     ELF_MOVES = [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
     moves.append([t, start])
     visited = set()
 
     while len(moves) > 0:
-        # print(len(moves))
         m, e = moves.popleft()
         s = (m, e)
         if m > mint:
@@ -140,107 +139,8 @@ def cross_valley(blizzards, c, r, start, goal, t):
             continue
         visited.add(s)
 
-        if m > 10000:
-            # print("too many moves")
-            sys.exit(1)
         if e == end:
-
             mint = min(mint, m)
-            print(f"mint is now: {mint}")
-            # return mint
-        else:
-            # print(len(tstates))
-            nm = m + 1
-            nb = tstates[nm % len(tstates)]
-            for em in ELF_MOVES:
-                ne = (e[0] + em[0], e[1] + em[1])
-                if ne not in nb and ne[1] > -1 and ne[1] < (r + 1):
-                    if (m + 1, ne) not in visited:
-                        moves.append([m + 1, ne])
-                    else:
-                        print("Skipping a move we saw")
-
-    return mint
-
-
-# The blizzards will repeat modulo something - find this cycle and we an index by
-# modulo arithmetic
-def get_tstates(blizzards, c, r):
-    states = set()
-    tstates = dict()
-    nb = blizzards
-    for i in range(700):
-        tstates[i] = nb
-        st = state(nb, (0, 0))
-        if st in states:
-            break
-        states.add(st)
-        nb = move_blizzrds(nb, c, r)
-    return tstates
-
-
-print("----")
-tstates = get_tstates(blizzards, c, r)
-
-# for i in range(54):
-#    print(f"i: {i} state: {i%len(tstates)}")
-#    print_valley(tstates[i % len(tstates)], start)
-#    print("----------------")
-
-
-t = cross_valley(blizzards, c, r, start, end, 0)
-submit(t, "a", 24, 2022)
-print(t)
-
-print_valley(tstates[t], end)
-t2 = cross_valley(blizzards, c, r, end, start, t)
-
-print(t2)
-print_valley(tstates[t2 % len(tstates)], start)
-t3 = cross_valley(blizzards, c, r, start, end, 40)
-print(t3)
-# sys.exit(1)
-
-
-def cross_valleys(blizzards, c, r, start, goals):
-    elves = start
-    mint = inf
-    goal = goals.pop()
-    moves = deque()
-    # tstates = get_tstates(blizzards, c, r)
-    tstates = dict()
-    tstates[0] = blizzards
-
-    ELF_MOVES = [(0, 0), (0, 1), (0, -1), (1, 0), (-1, 0)]
-    moves.append([0, start])
-    visited = set()
-
-    while len(moves) > 0:
-        m, e = moves.popleft()
-        s = (m, e)
-        if s in visited:
-            continue
-        visited.add(s)
-
-        if m > 10000:
-            # print("too many moves")
-            sys.exit(1)
-        if e == goal:
-            mint = m
-            print(f"mint is now: {mint}")
-            print(len(moves))
-            moves.clear()
-            print(len(moves))
-            print(len(goals))
-            if len(goals) > 0:
-                print(goal)
-                goal = goals.pop()
-                print(goal)
-                visted = set()
-                moves.append((m + 1, e))
-                continue
-            else:
-                return mint
         else:
             nm = m + 1
             if nm in tstates:
@@ -257,5 +157,25 @@ def cross_valleys(blizzards, c, r, start, goals):
     return mint
 
 
-t4 = cross_valleys(blizzards, c, r, start, [end, start, end])
-submit(t4, "b", 24, 2022)
+# The blizzards will repeat modulo something - find this cycle and we an index by
+# modulo arithmetic - or not? TODO look into this later?
+def get_tstates(blizzards, c, r):
+    states = set()
+    tstates = dict()
+    nb = blizzards
+    for i in range(700):
+        tstates[i] = nb
+        st = state(nb, (0, 0))
+        if st in states:
+            break
+        states.add(st)
+        nb = move_blizzrds(nb, c, r)
+    return tstates
+
+
+tstates = dict()
+t = cross_valley(blizzards, tstates, c, r, start, end, 0)
+submit(t, "a", 24, 2022)
+t2 = cross_valley(blizzards, tstates, c, r, end, start, t)
+t3 = cross_valley(blizzards, tstates, c, r, start, end, t2)
+submit(t3, "b", 24, 2022)
